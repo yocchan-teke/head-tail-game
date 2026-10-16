@@ -8,15 +8,15 @@
 </style>
 </head>
 <body><main class="app">
-<h1>🎤 頭お尻ゲーム</h1><p class="sub">10秒で、できるだけ長い言葉を作ろう！</p>
+<h1>🎤 頭お尻ゲーム</h1><p class="sub">15秒で、できるだけ長い言葉を作ろう！</p>
 <section class="panel"><div class="hint">頭　　　　　　　　　お尻</div><div class="letters"><span id="head" class="letter">？</span><span class="arrow">→</span><span id="tail" class="letter">？</span></div><div class="hint">この2文字で始まり、終わる言葉</div></section>
-<section class="panel"><div class="hint">残り時間</div><div id="timer" class="timer">10.0</div><div class="bar"><div id="fill" class="fill"></div></div></section>
+<section class="panel"><div class="hint">残り時間</div><div id="timer" class="timer">15.0</div><div class="bar"><div id="fill" class="fill"></div></div></section>
 <label for="answer">回答</label><input id="answer" type="text" placeholder="スタートして言葉を入力" autocomplete="off" autocapitalize="off" disabled maxlength="100">
 <div class="actions"><button class="primary" id="start">スタート / 次のお題</button><button class="secondary" id="submit" disabled>回答する</button></div>
 <label class="toggle"><input type="checkbox" id="music" checked> BGM・効果音を鳴らす</label>
 <section class="panel"><div id="status" class="status" aria-live="polite">スタートを押してください</div><div class="score">今回 <strong id="score">0</strong> 点 ／ 最高 <strong id="best">0</strong> 点</div><div class="actions" style="margin-top:14px"><button id="invalidate" class="danger" disabled>この回答を無効にする</button></div></section>
-<section class="panel examples" id="examples" hidden><h2>⏰ 解答サンプル</h2><div id="exampleRows"></div><p class="hint">事前に登録した実在する言葉の例です。文字数は目安です。</p></section>
-<p class="note">採点ルール：最初と最後のひらがなが一致すれば、ひらがな換算の文字数が得点です。小さい「ゃ・ゅ・ょ・っ」も1文字として数えます。実在する単語かどうかは自動判定しません。入力途中でも10秒経過時点で自動採点し、解答サンプルを表示します。早く回答した場合も10秒後にサンプルが出るよう、回答後は残り時間を待つ仕様ではなく、回答時点で終了します。最高得点はこの端末のブラウザに保存されます。</p>
+<section class="panel examples" id="examples" hidden><h2>⏰ 解答サンプル</h2><div id="exampleRows"></div><p class="hint">事前登録した言葉・フレーズの例です。長さは目安です。</p></section>
+<p class="note">採点ルール：最初と最後のひらがなが一致すれば、ひらがな換算の文字数が得点です。小さい「ゃ・ゅ・ょ・っ」も1文字として数えます。実在する単語かどうかは自動判定しません。入力途中でも15秒経過時点で自動採点し、解答サンプルを表示します。早く回答した場合も15秒後にサンプルが出るよう、回答後は残り時間を待つ仕様ではなく、回答時点で終了します。最高得点はこの端末のブラウザに保存されます。</p>
 <footer>非公式ファンメイド風のオリジナルゲームです。番組の音源は使用していません。</footer>
 </main>
 <script>
@@ -25,9 +25,15 @@ const $=id=>document.getElementById(id);
 // 解答例の正確性を優先し、例を登録したお題からランダムに出題。
 const questions=[
 {head:'し',tail:'ん',words:['しんぶん','しんかんせん','しぜんかがくはくぶつかん']},
-{head:'せ',tail:'ん',words:['せっけん','せいねん','せかいしぜんいさん']},
-{head:'こ',tail:'ん',words:['こくばん','こうえん','こくさいれんごうあんぜんほしょうりじかい']},
-{head:'か',tail:'ん',words:['かばん','かいだん','かんきょうほぜん']}
+{head:'か',tail:'き',words:['かき','かみひこうき','かがくぎじゅつしんこうきこうのしょくいん']},
+{head:'た',tail:'き',words:['たぬき','たまごやき','たきび']},
+{head:'は',tail:'る',words:['はる','はしる','はなみずきがさいている']},
+{head:'こ',tail:'う',words:['こう','こうこう','こくさいくうこう']},
+{head:'さ',tail:'く',words:['さく','さくぶんをかく','さくらがさく']},
+{head:'お',tail:'り',words:['おり','おにぎり','おまつり']},
+{head:'み',tail:'し',words:['みこし','みずたまもようのぼうし','みたらしだんごのはなし']},
+{head:'あ',tail:'め',words:['あめ','あかいあめ','あたたかいあめ']},
+{head:'ひ',tail:'と',words:['ひと','ひこうきのぱいろっと','ひとりであるくひと']}
 ];
 let currentQuestion=null;
 function showExamples(){const rows=$('exampleRows');rows.replaceChildren();const labels=['4文字程度','6文字程度','10文字程度'];currentQuestion.words.forEach((word,i)=>{const row=document.createElement('div');row.className='example-row';const label=document.createElement('span');label.textContent=labels[i];const value=document.createElement('strong');value.textContent=word+'（'+[...word].length+'文字）';row.append(label,value);rows.append(row)});$('examples').hidden=false;}
@@ -37,8 +43,8 @@ function sound(freq,duration=.13,type='sine',volume=.06){if(!$('music').checked)
 function stopMusic(){if(musicTimer!==null){clearInterval(musicTimer);musicTimer=null}}
 function startMusic(){stopMusic();let n=0;const notes=[392,494,587,494,440,523,659,523];musicTimer=setInterval(()=>{if(running)sound(notes[n++%notes.length],.17,'triangle',.035)},220)}
 function normalize(s){return s.normalize('NFKC').trim().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-96)).replace(/\s+/g,'')}
-function update(){if(!running)return;const left=Math.max(0,(deadline-performance.now())/1000);$('timer').textContent=left.toFixed(1);$('fill').style.width=(left*10)+'%';$('fill').style.background=left<=3?'#ff7373':'#54dbad';if(left<=0){finish(true);return}raf=requestAnimationFrame(update)}
-function start(){if(running){running=false;cancelAnimationFrame(raf);stopMusic()}currentQuestion=questions[Math.floor(Math.random()*questions.length)];head=currentQuestion.head;tail=currentQuestion.tail;$('examples').hidden=true;$('head').textContent=head;$('tail').textContent=tail;$('answer').value='';$('answer').disabled=false;$('submit').disabled=false;$('invalidate').disabled=true;$('score').textContent='0';points=0;validRound=false;$('status').textContent='10秒以内に回答！';$('timer').textContent='10.0';$('fill').style.width='100%';running=true;deadline=performance.now()+10000;sound(784,.18);startMusic();raf=requestAnimationFrame(update);$('answer').focus()}
+function update(){if(!running)return;const left=Math.max(0,(deadline-performance.now())/1000);$('timer').textContent=left.toFixed(1);$('fill').style.width=(left/15*100)+'%';$('fill').style.background=left<=3?'#ff7373':'#54dbad';if(left<=0){finish(true);return}raf=requestAnimationFrame(update)}
+function start(){if(running){running=false;cancelAnimationFrame(raf);stopMusic()}currentQuestion=questions[Math.floor(Math.random()*questions.length)];head=currentQuestion.head;tail=currentQuestion.tail;$('examples').hidden=true;$('head').textContent=head;$('tail').textContent=tail;$('answer').value='';$('answer').disabled=false;$('submit').disabled=false;$('invalidate').disabled=true;$('score').textContent='0';points=0;validRound=false;$('status').textContent='15秒以内に回答！';$('timer').textContent='15.0';$('fill').style.width='100%';running=true;deadline=performance.now()+15000;sound(784,.18);startMusic();raf=requestAnimationFrame(update);$('answer').focus()}
 function finish(timeout=false){if(!running)return;running=false;cancelAnimationFrame(raf);stopMusic();$('answer').disabled=true;$('submit').disabled=true;$('timer').textContent=timeout?'0.0':Math.max(0,(deadline-performance.now())/1000).toFixed(1);$('fill').style.width=timeout?'0%':$('fill').style.width;const a=normalize($('answer').value);const letters=[...a];const ok=letters.length>=2&&letters[0]===head&&letters.at(-1)===tail&&/^[ぁ-ゖー]+$/.test(a);points=ok?letters.length:0;validRound=ok;$('score').textContent=points;$('invalidate').disabled=!ok;if(timeout)showExamples();else{const q=currentQuestion;setTimeout(()=>{if(currentQuestion===q&&!running)showExamples()},Math.max(0,deadline-performance.now()))}if(ok){$('status').textContent=`${timeout?'時間切れ！':'回答！'} 「${a}」で ${points} 点！ 実在する言葉か確認してください。`;if(points>best){best=points;$('best').textContent=best;try{localStorage.setItem('headTailBest',String(best))}catch(e){}}sound(880,.2);setTimeout(()=>sound(1175,.25),130)}else{$('status').textContent=timeout&&!a?'時間切れ！回答なし（0点）':'頭とお尻が一致しない、またはひらがな以外が含まれています（0点）';sound(220,.35,'sawtooth',.04)}}
 $('start').addEventListener('click',start);$('submit').addEventListener('click',()=>finish(false));$('answer').addEventListener('keydown',e=>{if(e.key==='Enter'&&running){e.preventDefault();finish(false)}});$('invalidate').addEventListener('click',()=>{if(!validRound)return;validRound=false;points=0;$('score').textContent='0';$('status').textContent='この回答を無効にしました（0点）。※最高得点は過去の記録として残ります。';$('invalidate').disabled=true});$('music').addEventListener('change',()=>{if(!$('music').checked)stopMusic();else if(running)startMusic()});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMusic();else if(running)startMusic()});
 })();
